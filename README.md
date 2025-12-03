@@ -22,7 +22,7 @@ The goal is to build and deploy a **simple auto-generated blog** using:
 
 At the end of the challenge, send an email to:
 
-**📩 hiring@asimtria.com**
+**📩 hiring@assimetria.com**
 
 with the subject:
 
