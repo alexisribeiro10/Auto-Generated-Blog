@@ -7,6 +7,7 @@ You have **1 week** from receiving this challenge to complete it.
 The goal is to build and deploy a **simple auto-generated blog** using:
 - **React** (frontend)
 - **Node.js** (backend)
+- **PostgresSQL** (DB)
 - **Docker**
 - **AWS EC2 + CodeBuild + ECR**
 
