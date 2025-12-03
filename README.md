@@ -226,7 +226,7 @@ We expect you to show **ownership, reasoning, and autonomy**.
 
 Send everything to:
 
-**📩 hiring@asimtria.com**
+**📩 hiring@assimetria.com**
 
 With subject:
 
