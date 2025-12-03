@@ -163,9 +163,10 @@ One acceptable example:
 You may automate this or run manually — just explain what you did.
 
 ---
-
 ## 6. Suggested Folder Structure
 
+```text
+.
 ├── backend/
 │   ├── src/
 │   │   ├── index.js
@@ -200,6 +201,8 @@ You may automate this or run manually — just explain what you did.
 │   └── ARCHITECTURE.md
 │
 └── README.md
+
+```
 Feel free to adjust, but keep it clean and documented.
 
 ---
