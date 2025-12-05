@@ -10,12 +10,16 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-
+  
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: tech-backend
     ports:
       - "3001:3001"
+    env_file:
+      - ./backend/.env
     environment:
       DATABASE_URL: postgres://bloguser:blogpass@postgres:5432/blogdb
     depends_on:
@@ -30,6 +34,8 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app
 
 volumes:
   pgdata:
