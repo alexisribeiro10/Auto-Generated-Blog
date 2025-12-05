@@ -1,13 +1,16 @@
-# Build stage
-FROM node:20 AS build
+FROM node:20
+
 WORKDIR /app
+
+# Copiar package.json e package-lock.json e instalar dependências
 COPY package*.json ./
 RUN npm install
-COPY . .
-RUN npm run build
 
-# Production stage
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
+# Copiar todo o resto do código
+COPY . .
+
+# Expõe a porta do React dev server
 EXPOSE 3000
-CMD ["nginx", "-g", "daemon off;"]
+
+# Comando para iniciar o dev server
+CMD ["npm", "start"]

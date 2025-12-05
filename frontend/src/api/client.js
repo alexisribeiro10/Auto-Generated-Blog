@@ -1,9 +1,13 @@
-import axios from "axios";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
-const API_URL = "http://localhost:3001"; // URL do backend
+export async function fetchArticles() {
+  const res = await fetch(`${API_URL}/articles`);
+  if (!res.ok) throw new Error("Failed to load articles");
+  return res.json();
+}
 
-const client = axios.create({
-  baseURL: API_URL,
-});
-
-export default client;
+export async function fetchArticle(id) {
+  const res = await fetch(`${API_URL}/articles/${id}`);
+  if (!res.ok) throw new Error("Failed to load article");
+  return res.json();
+}
