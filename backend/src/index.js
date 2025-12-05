@@ -1,15 +1,15 @@
+import "dotenv/config";
 import express from "express";
-import pkg from "pg";
-const { Pool } = pkg;
+import cors from "cors";
+import articlesRouter from "./routes/articles.js";
+import { pool } from "./db.js";
 
 const app = express();
+
+app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));
 app.use(express.json());
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
-
-app.get("/health", async (req, res) => {
+app.get("/health", async (_req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
     res.json({ status: "ok", db_time: result.rows[0] });
@@ -18,4 +18,7 @@ app.get("/health", async (req, res) => {
   }
 });
 
-app.listen(3001, () => console.log("Backend running on port 3001"));
+app.use("/articles", articlesRouter);
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
