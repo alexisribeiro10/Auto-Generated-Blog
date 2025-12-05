@@ -3,8 +3,10 @@ import express from "express";
 import cors from "cors";
 import articlesRouter from "./routes/articles.js";
 import { pool } from "./db.js";
+import "./services/scheduler.js";
 
 const app = express();
+
 
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));
 app.use(express.json());
