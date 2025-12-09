@@ -3,25 +3,27 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: eu-west-3
-    ECR_REPOSITORY_BACKEND: auto-generated-blog-backend
-    ECR_REPOSITORY_FRONTEND: auto-generated-blog-frontend
+    ECR_REPOSITORY_BACKEND: tech-backend
+    ECR_REPOSITORY_FRONTEND: tech-frontend
     EC2_HOST: 13.38.129.46
     EC2_USER: ubuntu
-    SSH_KEY_PATH: C:\Users\alexi\asymetric-key.pem
+    SSH_KEY_SECRET_NAME: ec2-keys
 
 phases:
   install:
-    runtime-versions:
-      docker: 20
     commands:
       - echo "Instalando dependências..."
-      - sudo apt-get update -y
-      - sudo apt-get install -y ssh
+      - apt-get update -y
+      - apt-get install -y ssh jq
 
   pre_build:
     commands:
+      - echo "Recuperando chave SSH do Secrets Manager..."
+      - aws secretsmanager get-secret-value --secret-id $SSH_KEY_SECRET_NAME --query SecretString --output text > ec2_keys.pem
+      - chmod 400 ec2_keys.pem
+      - export SSH_KEY_PATH=./ec2_keys.pem
       - echo "Logando no ECR..."
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 572692059120.dkr.ecr.eu-west-3.amazonaws.com
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
   build:
     commands:
@@ -33,19 +35,18 @@ phases:
   post_build:
     commands:
       - echo "Tagging imagens..."
-      - docker tag $ECR_REPOSITORY_BACKEND:latest 572692059120.dkr.ecr.eu-west-3.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest
-      - docker tag $ECR_REPOSITORY_FRONTEND:latest 572692059120.dkr.ecr.eu-west-3.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest
+      - docker tag $ECR_REPOSITORY_BACKEND:latest 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest
+      - docker tag $ECR_REPOSITORY_FRONTEND:latest 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest
       - echo "Push para ECR..."
-      - docker push 572692059120.dkr.ecr.eu-west-3.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest
-      - docker push 572692059120.dkr.ecr.eu-west-3.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest
+      - docker push 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest
+      - docker push 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest
       - echo "Deploy no EC2..."
       - |
-        ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $EC2_USER@$EC2_HOST << 'EOF'
-          docker pull 572692059120.dkr.ecr.eu-west-3.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest
-          docker pull 572692059120.dkr.ecr.eu-west-3.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest
-          docker-compose -f ~/Auto-Generated-Blog/infra/docker-compose.yml down
-          docker-compose -f ~/Auto-Generated-Blog/infra/docker-compose.yml up -d
-        EOF
+        SSH_COMMAND="docker pull 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest && \
+        docker pull 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest && \
+        docker-compose -f ~/Auto-Generated-Blog/infra/docker-compose.yml down && \
+        docker-compose -f ~/Auto-Generated-Blog/infra/docker-compose.yml up -d"
+      - ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $EC2_USER@$EC2_HOST "$SSH_COMMAND"
 
 artifacts:
   files:
