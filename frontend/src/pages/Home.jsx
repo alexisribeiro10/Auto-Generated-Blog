@@ -28,17 +28,17 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+      <div className="min-h-screen bg-gray-50 p-8 animate-pulse">
         <div className="max-w-7xl mx-auto">
-          <Skeleton className="h-12 w-64 mb-8" />
+          <Skeleton className="h-12 w-64 mb-8 rounded-lg" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-4">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-8 w-full rounded-lg" />
+              <Skeleton className="h-24 w-full rounded-lg" />
+              <Skeleton className="h-24 w-full rounded-lg" />
             </div>
             <div className="md:col-span-2">
-              <Skeleton className="h-96 w-full" />
+              <Skeleton className="h-96 w-full rounded-lg" />
             </div>
           </div>
         </div>
@@ -48,13 +48,13 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-8">
-        <Card className="max-w-md">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+        <Card className="max-w-md border border-red-200 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-destructive">Error</CardTitle>
+            <CardTitle className="text-red-600">Error</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">{error}</p>
+            <p className="text-gray-700">{error}</p>
           </CardContent>
         </Card>
       </div>
@@ -62,41 +62,40 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Auto-Generated Blog
+        {/* Page Header */}
+        <header className="mb-12 text-center md:text-left">
+          <h1 className="text-5xl font-extrabold text-gray-900 mb-2">
+            Symetric Blog
           </h1>
-          <p className="text-muted-foreground">
-            Discover our latest articles
+          <p className="text-gray-600 text-lg">
+            Explore our latest AI-generated articles
           </p>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Articles List */}
-          <div className="md:col-span-1 space-y-3">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <aside className="md:col-span-1 space-y-4">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               Articles ({articles.length})
             </h2>
             <div className="space-y-3">
               {articles.map((article) => (
                 <Card
                   key={article.id}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    selected?.id === article.id
-                      ? "ring-2 ring-primary shadow-md"
-                      : ""
+                  className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.01] border border-gray-200 ${
+                    selected?.id === article.id ? "ring-2 ring-indigo-500 shadow-lg" : ""
                   }`}
                   onClick={() => openArticle(article.id)}
                 >
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg line-clamp-2">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold line-clamp-2">
                       {article.title}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-gray-500">
                       {new Date(article.created_at).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
@@ -107,16 +106,15 @@ export default function Home() {
                 </Card>
               ))}
             </div>
-          </div>
+          </aside>
 
           {/* Article Detail */}
-          <div className="md:col-span-2">
+          <section className="md:col-span-2">
             {selected ? (
-              <Card className="h-full">
+              <Card className="h-full border border-gray-200 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-3xl mb-2">{selected.title}</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Published on{" "}
+                  <CardTitle className="text-3xl font-bold mb-2">{selected.title}</CardTitle>
+                  <p className="text-sm text-gray-500 mb-4">
                     {new Date(selected.created_at).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
@@ -128,22 +126,22 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <div className="prose prose-gray max-w-none">
-                    <p className="text-gray-700 leading-7 whitespace-pre-wrap">
+                    <p className="whitespace-pre-wrap text-gray-700 leading-7">
                       {selected.content}
                     </p>
                   </div>
                 </CardContent>
               </Card>
             ) : (
-              <Card className="h-full flex items-center justify-center">
+              <Card className="h-full flex items-center justify-center border border-gray-200 shadow-lg">
                 <CardContent className="text-center py-12">
-                  <p className="text-muted-foreground text-lg">
+                  <p className="text-gray-500 text-lg">
                     Select an article to read
                   </p>
                 </CardContent>
               </Card>
             )}
-          </div>
+          </section>
         </div>
       </div>
     </div>
