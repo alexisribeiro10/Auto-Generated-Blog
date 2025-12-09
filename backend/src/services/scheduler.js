@@ -4,7 +4,7 @@ import { createGeneratedArticle } from "./articleGenerator.js";
 /**
  * Schedule a daily article generation at 08:00 PM
  */
-cron.schedule("0 20 * * *", async () => {
+cron.schedule("15 20 * * *", async () => {
     console.log("🕑 Starting daily article generation...");
 
     try {
