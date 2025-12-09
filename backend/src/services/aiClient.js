@@ -66,17 +66,19 @@ function parseResponse(data, articleTopic) {
     throw new Error("No content generated");
   }
 
+  // Split into lines and filter empty lines
   const lines = generatedText.split("\n").filter((line) => line.trim());
-  const title = lines[0]?.replace(/^#+\s*/, "").trim() || articleTopic;
-  const content = lines.slice(1).join("\n\n").trim();
 
-  // Remove Markdown bold/italic/heading syntax
-  lines = lines.map(
+  // Remove Markdown syntax
+  const cleanedLines = lines.map(
     (line) =>
       line
-        .replace(/^\s*[*_#]+\s*/, "") // headings or bold/italic at start
+        .replace(/^\s*[*_#]+\s*/, "") // remove headings or bold/italic at start
         .replace(/[*_]{1,2}/g, "") // remove remaining bold/italic
   );
+
+  const title = cleanedLines[0]?.trim() || articleTopic;
+  const content = cleanedLines.slice(1).join("\n\n").trim();
 
   console.log("✅ Successfully generated article via AI API");
 
