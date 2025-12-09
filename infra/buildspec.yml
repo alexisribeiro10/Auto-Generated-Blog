@@ -8,13 +8,14 @@ env:
     EC2_HOST: 13.38.129.46
     EC2_USER: ubuntu
     SSH_KEY_SECRET_NAME: ec2-keys
+    EC2_HOME: /home/ubuntu
 
 phases:
   install:
     commands:
       - echo "Instalando dependências..."
       - apt-get update -y
-      - apt-get install -y ssh jq
+      - apt-get install -y ssh jq awscli
 
   pre_build:
     commands:
@@ -42,10 +43,11 @@ phases:
       - docker push 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest
       - echo "Deploy no EC2..."
       - |
-        SSH_COMMAND="docker pull 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest && \
-        docker pull 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest && \
-        docker-compose -f ~/Auto-Generated-Blog/infra/docker-compose.yml down && \
-        docker-compose -f ~/Auto-Generated-Blog/infra/docker-compose.yml up -d"
+        SSH_COMMAND="aws ecr get-login-password --region $AWS_DEFAULT_REGION | sudo docker login --username AWS --password-stdin 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com && \
+        sudo docker pull 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest && \
+        sudo docker pull 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest && \
+        sudo docker-compose -f $EC2_HOME/Auto-Generated-Blog/infra/docker-compose.yml down && \
+        sudo docker-compose -f $EC2_HOME/Auto-Generated-Blog/infra/docker-compose.yml up -d"
       - ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $EC2_USER@$EC2_HOST "$SSH_COMMAND"
 
 artifacts:
