@@ -70,6 +70,14 @@ function parseResponse(data, articleTopic) {
   const title = lines[0]?.replace(/^#+\s*/, "").trim() || articleTopic;
   const content = lines.slice(1).join("\n\n").trim();
 
+  // Remove Markdown bold/italic/heading syntax
+  lines = lines.map(
+    (line) =>
+      line
+        .replace(/^\s*[*_#]+\s*/, "") // headings or bold/italic at start
+        .replace(/[*_]{1,2}/g, "") // remove remaining bold/italic
+  );
+
   console.log("✅ Successfully generated article via AI API");
 
   return {
