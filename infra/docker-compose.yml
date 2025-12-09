@@ -43,7 +43,7 @@ services:
       - "443:443"     # HTTPS
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/certs:/etc/letsencrypt/live/localhost
     depends_on:
       - frontend
       - backend
