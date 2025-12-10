@@ -7,6 +7,15 @@ import "./services/scheduler.js";
 
 const app = express();
 
+if (!process.env.HF_TOKEN) {
+  console.error("HF_TOKEN não encontrado no .env!");
+  process.exit(1); 
+} else {
+  console.log(
+    "HF_TOKEN carregado corretamente:",
+    process.env.HF_TOKEN.substring(0, 5) + "…"
+  );
+}
 
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));
 app.use(express.json());
