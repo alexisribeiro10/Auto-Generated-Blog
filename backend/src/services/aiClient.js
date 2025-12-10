@@ -66,15 +66,14 @@ function parseResponse(data, articleTopic) {
     throw new Error("No content generated");
   }
 
-  // Split into lines and filter empty lines
   const lines = generatedText.split("\n").filter((line) => line.trim());
 
   // Remove Markdown syntax
   const cleanedLines = lines.map(
     (line) =>
       line
-        .replace(/^\s*[*_#]+\s*/, "") // remove headings or bold/italic at start
-        .replace(/[*_]{1,2}/g, "") // remove remaining bold/italic
+        .replace(/^\s*[*_#]+\s*/, "") 
+        .replace(/[*_]{1,2}/g, "") 
   );
 
   const title = cleanedLines[0]?.trim() || articleTopic;

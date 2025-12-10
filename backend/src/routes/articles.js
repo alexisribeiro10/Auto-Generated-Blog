@@ -30,21 +30,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Create
-router.post("/", async (req, res) => {
-  const { title, content } = req.body || {};
-  if (!title || !content)
-    return res.status(400).json({ error: "title and content required" });
-  try {
-    const { rows } = await pool.query(
-      "INSERT INTO articles (title, content) VALUES ($1, $2) RETURNING id, title, content, created_at",
-      [title, content]
-    );
-    res.status(201).json(rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // Generate new article (for testing/manual trigger)
 router.post("/generate", async (req, res) => {
@@ -58,25 +43,6 @@ router.post("/generate", async (req, res) => {
   }
 });
 
-// Update
-router.put("/:id", async (req, res) => {
-  const { title, content } = req.body || {};
-  if (!title || !content)
-    return res.status(400).json({ error: "title and content required" });
-  try {
-    const { rows } = await pool.query(
-      `UPDATE articles
-       SET title = $1, content = $2
-       WHERE id = $3
-       RETURNING id, title, content, created_at`,
-      [title, content, req.params.id]
-    );
-    if (!rows.length) return res.status(404).json({ error: "Not found" });
-    res.json(rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // Delete
 router.delete("/:id", async (req, res) => {
