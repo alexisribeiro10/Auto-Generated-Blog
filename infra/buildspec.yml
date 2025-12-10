@@ -5,9 +5,7 @@ env:
     AWS_DEFAULT_REGION: eu-west-3
     ECR_REPOSITORY_BACKEND: tech-backend
     ECR_REPOSITORY_FRONTEND: tech-frontend
-    EC2_HOST: 13.38.129.46
-    EC2_USER: ubuntu
-    SSH_KEY_SECRET_NAME: ec2-keys
+    EC2_INSTANCE_ID: i-0348c30d1346185d8
     EC2_HOME: /home/ubuntu
 
 phases:
@@ -15,40 +13,50 @@ phases:
     commands:
       - echo "Instalando dependências..."
       - apt-get update -y
-      - apt-get install -y ssh jq awscli
+      - apt-get install -y jq awscli
 
   pre_build:
     commands:
-      - echo "Recuperando chave SSH do Secrets Manager..."
-      - aws secretsmanager get-secret-value --secret-id $SSH_KEY_SECRET_NAME --query SecretString --output text > ec2_keys.pem
-      - chmod 400 ec2_keys.pem
-      - export SSH_KEY_PATH=./ec2_keys.pem
       - echo "Logando no ECR..."
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 572692059120.dkr.ecr.eu-west-3.amazonaws.com
 
   build:
     commands:
       - echo "Construindo imagem backend..."
-      - docker build -t $ECR_REPOSITORY_BACKEND ./backend
+      - docker build -t tech-backend ./backend
+
       - echo "Construindo imagem frontend..."
-      - docker build -t $ECR_REPOSITORY_FRONTEND ./frontend
+      - docker build -t tech-frontend ./frontend
 
   post_build:
     commands:
       - echo "Tagging imagens..."
-      - docker tag $ECR_REPOSITORY_BACKEND:latest 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest
-      - docker tag $ECR_REPOSITORY_FRONTEND:latest 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest
+      - docker tag tech-backend:latest 572692059120.dkr.ecr.eu-west-3.amazonaws.com/tech-backend:latest
+      - docker tag tech-frontend:latest 572692059120.dkr.ecr.eu-west-3.amazonaws.com/tech-frontend:latest
+
       - echo "Push para ECR..."
-      - docker push 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest
-      - docker push 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest
-      - echo "Deploy no EC2..."
+      - docker push 572692059120.dkr.ecr.eu-west-3.amazonaws.com/tech-backend:latest
+      - docker push 572692059120.dkr.ecr.eu-west-3.amazonaws.com/tech-frontend:latest
+
+      - echo "Executando deploy via SSM na EC2..."
       - |
-        SSH_COMMAND="aws ecr get-login-password --region $AWS_DEFAULT_REGION | sudo docker login --username AWS --password-stdin 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com && \
-        sudo docker pull 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_BACKEND:latest && \
-        sudo docker pull 572692059120.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_FRONTEND:latest && \
-        sudo docker-compose -f $EC2_HOME/Auto-Generated-Blog/infra/docker-compose.yml down && \
-        sudo docker-compose -f $EC2_HOME/Auto-Generated-Blog/infra/docker-compose.yml up -d"
-      - ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $EC2_USER@$EC2_HOST "$SSH_COMMAND"
+        aws ssm send-command \
+          --instance-ids "$EC2_INSTANCE_ID" \
+          --document-name "AWS-RunShellScript" \
+          --comment "Deploy Blog App" \
+          --parameters 'commands=[
+            "echo Logging into ECR...",
+            "/usr/bin/aws ecr get-login-password --region eu-west-3 | sudo /usr/bin/docker login --username AWS --password-stdin 572692059120.dkr.ecr.eu-west-3.amazonaws.com",
+            "echo Pulling new images...",
+            "sudo /usr/bin/docker pull 572692059120.dkr.ecr.eu-west-3.amazonaws.com/tech-backend:latest",
+            "sudo /usr/bin/docker pull 572692059120.dkr.ecr.eu-west-3.amazonaws.com/tech-frontend:latest",
+            "echo Restarting containers...",
+            "cd /home/ubuntu/Auto-Generated-Blog/infra",
+            "sudo /usr/bin/docker compose down || true",
+            "sudo /usr/bin/docker compose up -d",
+            "echo Deploy completo!"
+          ]' \
+          --timeout-seconds 900
 
 artifacts:
   files:
