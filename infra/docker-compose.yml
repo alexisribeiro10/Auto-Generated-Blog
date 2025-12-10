@@ -19,7 +19,7 @@ services:
       dockerfile: Dockerfile
     container_name: tech-backend
     ports:
-      - "3001:3001"
+      - "3001:3001"  
     environment:
       DATABASE_URL: postgres://bloguser:blogpass@postgres:5432/blogdb
     depends_on:
@@ -31,7 +31,7 @@ services:
       dockerfile: Dockerfile
     container_name: tech-frontend
     ports:
-      - "3000:3000"
+      - "3000:3000"  
     depends_on:
       - backend
 
@@ -39,11 +39,9 @@ services:
     image: nginx:latest
     container_name: tech-nginx
     ports:
-      - "80:80"       # HTTP
-      - "443:443"     # HTTPS
+      - "80:80"  # HTTP interno para ALB
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/certs:/etc/letsencrypt/live/localhost
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       - frontend
       - backend
